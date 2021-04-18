@@ -19,6 +19,30 @@ const { username, room } = Qs.parse(location.search, { ignoreQueryPrefix: true }
 // focus message field on load
 window.onload = $messageFormInput.focus()
 
+const autoScroll = () => {
+  // New message element
+  const $newMessage = $messages.lastElementChild
+
+  // Height of the new message
+  const newMessageStyles = getComputedStyle($newMessage)
+  const newMessageMargin = parseInt(newMessageStyles.marginBottom)
+  const newMessageHeight = $newMessage.offsetHeight + newMessageMargin
+
+  // Visible height
+  const visibleHeight = $messages.offsetHeight
+
+  // Height of messages container
+  const containerHeight = $messages.scrollHeight
+
+  // How far have I scrolled?
+  const scrollOffset = $messages.scrollTop + visibleHeight
+  console.log('hright', containerHeight, newMessageHeight, scrollOffset)
+
+  if (containerHeight - newMessageHeight <= scrollOffset + 3) {
+    $messages.scrollTop = $messages.scrollHeight
+  }
+}
+
 socket.on('message', (message) => {
   const markup = Mustache.render(messageTemplate, {
     username: message.username,
@@ -26,6 +50,7 @@ socket.on('message', (message) => {
     createdAt: moment(message.createdAt).format('h:mm a')
   })
   $messages.insertAdjacentHTML('beforeend', markup)
+  autoScroll()
 })
 
 socket.on('roomData', ({ room, users }) => {
@@ -43,6 +68,7 @@ socket.on('locationMessage', (message) => {
     createdAt: moment(message.createdAt).format('h:mm a')
   })
   $messages.insertAdjacentHTML('beforeend', markup)
+  autoScroll()
 })
 
 $messageForm.addEventListener('submit', (e) => {
