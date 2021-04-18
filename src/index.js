@@ -17,15 +17,17 @@ io.on('connection', (socket) => {
   socket.emit('message', 'Welcome!')
   socket.broadcast.emit('message', 'A new user has joined the room :)')
 
-  socket.on('sendMessage', (mesg) => {
+  socket.on('sendMessage', (mesg, cb) => {
     io.emit('message', mesg)
+    cb()
   })
 
-  socket.on('sendLocation', (location) => {
+  socket.on('sendLocation', (location, cb) => {
     socket.broadcast.emit(
       'message', 
       `https://google.com/maps?q=${location.latitude},${location.longitude}`
     )
+    cb()
   })
 
   socket.on('disconnect', () => {
