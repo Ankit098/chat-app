@@ -5,11 +5,26 @@ const $messageForm = document.querySelector('#mesgForm')
 const $messageFormInput = $messageForm.querySelector('input')
 const $messageFormBtn = $messageForm.querySelector('button')
 const $locationBtn = document.querySelector('#location')
+const $messages = document.querySelector('#messages')
 
 window.onload = $messageFormInput.focus()
 
 socket.on('message', (message) => {
-  console.log(message)
+  const markup = `<div> <p>${message}</p> </div>`;
+  $messages.insertAdjacentHTML('beforeend', markup)
+})
+
+socket.on('locationMessage', (message) => {
+  const markup = `<div> 
+    <a 
+      href=${message} 
+      target='_blank' 
+      rel='noopener noreferrer'
+    > 
+      My location 
+    </a> 
+  </div>`;
+  $messages.insertAdjacentHTML('beforeend', markup)
 })
 
 $messageForm.addEventListener('submit', (e) => {

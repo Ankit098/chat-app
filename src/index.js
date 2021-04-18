@@ -23,8 +23,8 @@ io.on('connection', (socket) => {
   })
 
   socket.on('sendLocation', (location, cb) => {
-    socket.broadcast.emit(
-      'message', 
+    io.emit(
+      'locationMessage', 
       `https://google.com/maps?q=${location.latitude},${location.longitude}`
     )
     cb()
