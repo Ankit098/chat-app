@@ -1,2 +1,2 @@
 ## Real Time Chat app
-### NodeJs (Express) + websocket.io
+### NodeJs (Express) + socket.io
