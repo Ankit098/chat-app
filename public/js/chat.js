@@ -55,6 +55,7 @@ $locationBtn.addEventListener('click', (e) => {
       longitude: position.coords.longitude
     }, () => {
       $locationBtn.removeAttribute('disabled')
+      $messageFormInput.focus()
       console.log('Location shared!')
     })
   })
