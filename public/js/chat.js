@@ -9,3 +9,15 @@ document.querySelector('#mesgForm').addEventListener('submit', (e) => {
   let mesg = e.target.elements.message.value
   socket.emit('sendMessage', mesg)
 })
+
+document.querySelector('#location').addEventListener('click', (e) => {
+  if(!navigator.geolocation) {
+    return alert('Your browser does not support geolocation!')
+  }
+  navigator.geolocation.getCurrentPosition((position) => {
+    socket.emit('sendLocation', {
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude
+    })
+  })
+})
