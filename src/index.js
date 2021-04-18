@@ -3,6 +3,12 @@ const http = require('http')
 const express = require('express')
 const socketio = require('socket.io')
 const { generateMessage, generateLocationMessage } = require('./utils/messages')
+const {
+  addUser,
+  removeUser,
+  getUser,
+  getUsersInRoom
+} = require('./utils/users')
 
 const app = express()
 const server = http.createServer(app)
@@ -15,24 +21,50 @@ app.use(express.static(publicPath))
 
 io.on('connection', (socket) => {
   console.log('New websocket connection')
-  socket.emit('message', generateMessage('Welcome!'))
-  socket.broadcast.emit('message', generateMessage('A new user has joined!'))
 
-  socket.on('sendMessage', (mesg, cb) => {
-    io.emit('message', generateMessage(mesg))
-    cb()
-  })
+  socket.on('join', ({ username, room }, cb) => {
+    const { user, error } = addUser({ id: socket.id, username, room })
+    if (error) {
+      return cb(error)
+    }
 
-  socket.on('sendLocation', (location, cb) => {
-    io.emit(
-      'locationMessage', 
-      generateLocationMessage(location.latitude, location.longitude)
+    // if user is successfully added
+    socket.join(user.room)
+    socket.emit('message', generateMessage('Admin', 'Welcome!'))
+    socket.broadcast.to(user.room).emit(
+      'message', 
+      generateMessage('Admin', `${user.username} has joined the room!`)
     )
     cb()
   })
 
+  socket.on('sendMessage', (mesg, cb) => {
+    const user = getUser(socket.id)
+    if(user) {
+      io.to(user.room).emit('message', generateMessage(user.username, mesg))
+      cb()
+    }
+  })
+
+  socket.on('sendLocation', (location, cb) => {
+    const user = getUser(socket.id)
+    if(user) {
+      io.to(user.room).emit(
+        'locationMessage', 
+        generateLocationMessage(user.username, location.latitude, location.longitude)
+      )
+      cb()
+    }
+  })
+
   socket.on('disconnect', () => {
-    io.emit('message', generateMessage('A user has left'))
+    const user = removeUser(socket.id)
+    if(user) {
+      io.to(user.room).emit(
+        'message', 
+        generateMessage('Admin', `${user.username} has left the room!`)
+      )
+    }
   })
 })
 

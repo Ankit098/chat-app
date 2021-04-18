@@ -11,10 +11,15 @@ const $messages = document.querySelector('#messages')
 const messageTemplate = document.querySelector('#message-template').innerHTML
 const locationTemplate = document.querySelector('#location-template').innerHTML
 
+// options
+const { username, room } = Qs.parse(location.search, { ignoreQueryPrefix: true })
+
+// focus message field on load
 window.onload = $messageFormInput.focus()
 
 socket.on('message', (message) => {
   const markup = Mustache.render(messageTemplate, {
+    username: message.username,
     message: message.text,
     createdAt: moment(message.createdAt).format('h:mm a')
   })
@@ -23,6 +28,7 @@ socket.on('message', (message) => {
 
 socket.on('locationMessage', (message) => {
   const markup = Mustache.render(locationTemplate, {
+    username: message.username,
     url: message.url,
     createdAt: moment(message.createdAt).format('h:mm a')
   })
@@ -31,10 +37,6 @@ socket.on('locationMessage', (message) => {
 
 $messageForm.addEventListener('submit', (e) => {
   e.preventDefault()
-  if($messageFormInput.value == '') {
-    $messageFormInput.focus()
-    return
-  }
   $messageFormBtn.setAttribute('disabled', 'disabled')
   socket.emit('sendMessage', $messageFormInput.value, () => {
     $messageFormBtn.removeAttribute('disabled')
@@ -59,4 +61,11 @@ $locationBtn.addEventListener('click', (e) => {
       console.log('Location shared!')
     })
   })
+})
+
+socket.emit('join', { username, room }, (error) => {
+  if(error) {
+    alert(error)
+    location.href = '/'
+  }
 })
